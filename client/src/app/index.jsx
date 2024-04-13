@@ -1,7 +1,7 @@
 import {RouterProvider} from "react-router-dom";
 import {router} from "../pages";
 
-import './style/style.sass'
+import './style/index.sass'
 
 const App = () => {
 
