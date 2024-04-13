@@ -3,6 +3,7 @@ import cn from "classnames";
 
 import styles from './style.module.sass'
 import {useNavigate} from "react-router-dom";
+import FormButton from "../form-button/index.jsx";
 
 const roles = [
     {value: 'student', label: 'Ученик'},
@@ -45,15 +46,7 @@ const RegisterForm = () => {
                     ))
                 }
 
-                <button
-                    className={cn(
-                        styles.button,
-                        'mt-3'
-                    )}
-                    type={'submit'}
-                >
-                    Далее
-                </button>
+                <FormButton />
             </Form>
         </Formik>
     )
