@@ -2,12 +2,8 @@ import {useField} from 'formik'
 
 import style from './style.module.sass'
 import cn from "classnames";
+import ValidationError from "../validation-error/index.jsx";
 
-const ValidationError = ({error}) => {
-    return (
-        <div className={'text-danger form-text'}>{error}</div>
-    )
-}
 
 const TextInput = ({label, hidden, ...props}) => {
     const [field, meta] = useField(props)

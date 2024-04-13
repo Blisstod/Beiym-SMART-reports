@@ -1,7 +1,7 @@
 import cn from "classnames";
 import styles from "./style.module.sass";
 
-const FormButton = () => {
+const FormButton = ({text}) => {
     return (
         <button
             className={cn(
@@ -10,7 +10,7 @@ const FormButton = () => {
             )}
             type={'submit'}
         >
-            Далее
+            {text}
         </button>
     )
 }
