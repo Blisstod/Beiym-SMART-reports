@@ -1,0 +1,23 @@
+{
+    "recipient": "Ученик",
+    "name": "Досымжан",
+    "date": "13 апреля 2024 г.",
+    "subject": "Математика",
+    "total_score": [45, 50],
+    "previous_results": [20, 22, 24, 23, 33, 35, 38, 42, 45],
+    "difference_with_previous_exam": {
+        "score_difference": [45, 40],
+        "percentage_change": "+12.5%"
+    },
+    "goal": {
+        "target_score": 45,
+        "achieved": true
+    },
+    "time": 12,
+    "percentages": {
+        "31-40": "38.6%",
+        "41-50": "22.5%",
+        "21-30": "30.8%",
+        "0-20": "8.1%"
+    }
+}
