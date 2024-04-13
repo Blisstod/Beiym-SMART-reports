@@ -7,29 +7,36 @@ import {Link} from "react-router-dom";
 import styles from './styles.module.sass'
 import cn from "classnames";
 
+const REQUIRED = 'Это поле обязательно для заполнения'
 
 const values = [
-    {name: 'name', label: 'Имя'},
-    {name: 'secondName', label: 'Фамилия'},
-    {name: 'email', label: 'Электронная почта'},
-    {name: 'password', label: 'Пароль'},
-    {name: 'confirmPassword', label: 'Повторно введите пароль'},
-    {name: 'childEmail', label: 'Электронная почта вашего ребенка'},
+    {name: 'name', label: 'Имя', validation: yup.string().required(REQUIRED)},
+    {name: 'secondName', label: 'Фамилия', validation: yup.string().required(REQUIRED)},
+    {name: 'email', label: 'Электронная почта', validation: yup.string().required(REQUIRED).email()},
+    {name: 'password', label: 'Пароль', validation: yup.string().required(REQUIRED).min(3, 'Пароль слишком короткий')},
+    {name: 'confirmPassword', label: 'Повторно введите пароль', validation: yup.string().required(REQUIRED).oneOf([yup.ref('password')], 'Пароли не совпадают')},
+    {name: 'childEmail', label: 'Электронная почта вашего ребенка', validation: yup.string().required(REQUIRED)},
 ]
 
 const initialValues = {}
-values.forEach(value => initialValues[value.name] = '')
+const validationSchema = {}
+values.forEach(value => {
+    initialValues[value.name] = ''
+    validationSchema[value.name] = value.validation
+})
+
 
 const RegisterParentForm = () => {
 
     const onSubmit = ({name, secondName, email, password, childEmail}) => {
-
+        // TODO: implement request
     }
 
     return (
         <Formik
             initialValues={initialValues}
             onSubmit={onSubmit}
+            validationSchema={yup.object(validationSchema)}
         >
             <Form className={'d-flex flex-column w-100'}>
                 {
@@ -40,6 +47,7 @@ const RegisterParentForm = () => {
                                 hidden={true}
                                 placeholder={value.label}
                                 name={value.name}
+                                type={value.name.includes('assword')? 'password' : 'text'}
                             />
                         </div>
                     ))
