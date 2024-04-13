@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const classSchema = new mongoose.Schema({
     schoolName: { type: String, required: true },
     className: { type: String, required: true },
-    classId: { type: String, required: true, unique: true },
     teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Teacher' },
     studentIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }]
 }, { timestamps: true });
