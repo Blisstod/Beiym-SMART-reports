@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
 
 userSchema.pre('save', async function(next) {
     if (this.isModified('password')) {
-        this.password = await bcrypt.hash(this.password, 12);
+        this.password = await bcrypt.hash(this.password, 5);
     }
     next();
 });
@@ -30,26 +30,35 @@ userSchema.statics.findByCredentials = async function(email, password) {
 
 const User = mongoose.model('User', userSchema);
 
-const Student = User.discriminator('Student', new mongoose.Schema({
-    studentId: { type: String, required: true, unique: true },
+const examSchema = new mongoose.Schema({
+    date: { type: Date, required: true },
+    totalScore: { type: Number, required: true, max: 140 },
+    kazakhLang: { type: Number, required: true, max: 10 },
+    history: { type: Number, required: true, max: 20 },
+    beginnerMath: { type: Number, required: true, max: 10 },
+    profileSubject1: { type: String, required: true },
+    profileSubject1Score: { type: Number, required: true, max: 50 },
+    profileSubject2: { type: String, required: true },
+    profileSubject2Score: { type: Number, required: true, max: 50 },
+}, { _id: false, timestamps: { createdAt: true, updatedAt: false } });
+
+const studentSchema = new mongoose.Schema({
     classId: { type: mongoose.Schema.Types.ObjectId, ref: 'Class' },
-    scores: [new mongoose.Schema({
-        subject: { type: String, required: true },
-        score: { type: Number, required: true },
-        total: { type: Number, required: true },
-    }, { timestamps: true })],
-    selectedProfile: { type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }
-}));
+    profileSubject1: { type: String, required: true },
+    profileSubject2: { type: String, required: true },
+    exams: [examSchema]
+}, { timestamps: true });
+
 
 const Teacher = User.discriminator('Teacher', new mongoose.Schema({
-    teacherId: { type: String, required: true, unique: true },
-    classId: { type: mongoose.Schema.Types.ObjectId, ref: 'Class' }
+    schoolName: { type: String, ref: 'Class' },
+    className: { type: String }
 }));
 
 const Parent = User.discriminator('Parent', new mongoose.Schema({
-    parentId: { type: String, required: true, unique: true },
     childEmails: [{ type: String }],
     childStudentIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }]
 }));
 
+const Student = User.discriminator('Student', studentSchema);
 module.exports = { User, Student, Teacher, Parent };

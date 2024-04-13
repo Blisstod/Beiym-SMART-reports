@@ -1,5 +1,10 @@
 const jwt = require('jsonwebtoken');
+<<<<<<< HEAD
 const { User } = require('../models/userModel');
+=======
+const bcrypt = require
+const { User , Student, Parent, Teacher} = require('../models/userModel');
+>>>>>>> 47ebeb3a3eccd41eb46064212b151a507351bcb3
 const ApiError = require('../error/ApiError');
 
 const generateJwt = (id, email, role) => {
@@ -11,6 +16,11 @@ const generateJwt = (id, email, role) => {
 };
 
 class AuthController {
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 47ebeb3a3eccd41eb46064212b151a507351bcb3
     async login(req, res, next) {
         try {
             const { email, password } = req.body;
@@ -25,6 +35,7 @@ class AuthController {
         }
     }
 
+<<<<<<< HEAD
     async register(req, res, next) {
         try {
             const { email, name, surname, password, role } = req.body;
@@ -40,6 +51,8 @@ class AuthController {
         }
     }
 
+=======
+>>>>>>> 47ebeb3a3eccd41eb46064212b151a507351bcb3
     async check(req, res, next) {
         try {
             const token = generateJwt(req.user._id, req.user.email, req.user.role);
@@ -48,6 +61,103 @@ class AuthController {
             next(ApiError.internal('Error generating token'));
         }
     }
+<<<<<<< HEAD
+=======
+
+    async registerStudent(req, res, next) {
+        try {
+            const {
+                email,
+                name,
+                surname,
+                password,
+                classId,
+                profileSubject1,
+                profileSubject2
+            } = req.body;
+
+            const userExists = await User.findOne({ email });
+            if (userExists) {
+                return next(ApiError.conflict('Email already in use.'));
+            }
+
+            const student = await Student.create({
+                email,
+                name,
+                surname,
+                password,
+                classId,
+                profileSubject1,
+                profileSubject2,
+                exams: []
+            });
+
+            const token = generateJwt(student._id, student.email, student.role);
+            res.status(201).json({ token });
+        } catch (error) {
+            next(ApiError.internal(error.message));
+        }
+    }
+
+
+
+    async registerTeacher(req, res, next) {
+        try {
+            const { email, name, surname, password, schoolName, className } = req.body;
+            const userExists = await User.findOne({ email });
+            if (userExists) {
+                return next(ApiError.conflict('Email already in use.'));
+            }
+            const teacher = await Teacher.create({
+                email,
+                name,
+                surname,
+                password,
+                schoolName,
+                className
+            });
+            const token = generateJwt(teacher._id, teacher.email, teacher.role);
+            res.status(201).json({ token });
+        } catch (error) {
+            next(ApiError.internal(error.message));
+        }
+    }
+
+    async registerParent(req, res, next) {
+        try {
+            const { email, name, surname, password, childEmails, childStudentIds } = req.body;
+            const userExists = await User.findOne({ email });
+            if (userExists) {
+                return next(ApiError.conflict('Email already in use.'));
+            }
+            const parent = await Parent.create({
+                email,
+                name,
+                surname,
+                password,
+                childEmails,
+                childStudentIds
+            });
+            const token = generateJwt(parent._id, parent.email, parent.role);
+            res.status(201).json({ token });
+        } catch (error) {
+            next(ApiError.internal(error.message));
+        }
+    }
+
+    async register(req, res, next){
+        const {name, surname, email, password} = req.body
+
+        const exists = await User.findOne({ email } );
+        if(exists){
+            return next(ApiError.conflict('User this Email already exists!'))
+        }
+        const user = await User.create({name: name, surname: surname, email: email, password: password})
+        const token = generateJwt(user.id, user.email, user.role)
+        return res.json({token})
+    }
+
+>>>>>>> 47ebeb3a3eccd41eb46064212b151a507351bcb3
 }
 
 module.exports = new AuthController();
