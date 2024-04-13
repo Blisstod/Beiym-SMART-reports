@@ -27,9 +27,12 @@ func main() {
 
 	logger.Info("starting server", "addr", srv.Addr)
 
-	err := srv.ListenAndServe()
-
-	logger.Error(err.Error())
-	os.Exit(1)
+	go func() {
+		err := srv.ListenAndServe()
+		if err != nil {
+			logger.Error(err.Error())
+			os.Exit(1)
+		}
+	}()
 
 }

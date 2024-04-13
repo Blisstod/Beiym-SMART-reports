@@ -1,0 +1,14 @@
+version: '3.1'
+
+services:
+  go:
+    build: ./backend/AI
+    restart: always
+    ports:
+      - "4000:8080"
+
+  node:
+    build: ./backend/server
+    restart: always
+    ports:
+      - "4001:8081"
