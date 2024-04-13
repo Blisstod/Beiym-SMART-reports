@@ -1,11 +1,5 @@
-import {Form, Formik} from "formik";
 import * as yup from 'yup'
-import TextInput from "../text-input";
-import FormButton from "../form-button/index.jsx";
-import {Link} from "react-router-dom";
-
-import styles from './styles.module.sass'
-import cn from "classnames";
+import RegisterForm from "../register-form/index.jsx";
 
 const REQUIRED = 'Это поле обязательно для заполнения'
 
@@ -33,39 +27,12 @@ const RegisterParentForm = () => {
     }
 
     return (
-        <Formik
-            initialValues={initialValues}
+        <RegisterForm
             onSubmit={onSubmit}
-            validationSchema={yup.object(validationSchema)}
-        >
-            <Form className={'d-flex flex-column w-100'}>
-                {
-                    values.map(value => (
-                        <div key={value.name}
-                        className={'mt-2'}>
-                            <TextInput
-                                hidden={true}
-                                placeholder={value.label}
-                                name={value.name}
-                                type={value.name.includes('assword')? 'password' : 'text'}
-                            />
-                        </div>
-                    ))
-                }
-
-                <FormButton />
-
-                <div className={cn(
-                    styles.account,
-                    'text-center mt-2'
-                )}>
-                    Уже есть аккаунт?
-                    <Link to={'/auth/login'} className={'ms-1'}>
-                        Войдите!
-                    </Link>
-                </div>
-            </Form>
-        </Formik>
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            inputs={values}
+        />
     )
 }
 

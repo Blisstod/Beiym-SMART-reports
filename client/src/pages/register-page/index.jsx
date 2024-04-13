@@ -1,6 +1,6 @@
 
 import cn from 'classnames'
-import RegisterForm from "../../components/register-form/index.jsx";
+import RegisterRoleForm from "../../components/register-role-form/index.jsx";
 
 const RegisterPage = () => {
     return (
@@ -20,7 +20,7 @@ const RegisterPage = () => {
                 'offset-sm-4 col-sm-4',
                 'offset-lg-5 col-lg-2'
             )}>
-                <RegisterForm/>
+                <RegisterRoleForm/>
             </div>
         </>
     )

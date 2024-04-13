@@ -2,7 +2,7 @@
 import styles from './style.module.sass'
 import cn from "classnames";
 import RegisterParentForm from "../../components/register-parent-form/index.jsx";
-import RegisterForm from "../../components/register-form/index.jsx";
+import RegisterRoleForm from "../../components/register-role-form/index.jsx";
 
 const RegisterParentPage = () => {
     return (
