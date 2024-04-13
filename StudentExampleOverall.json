@@ -1,0 +1,32 @@
+{
+    "recipient": "Ученик",
+    "name": "Досымжан",
+    "date": "13 апреля 2024 г.",
+    "total_score": 123,
+    "subject_scores": {
+        "mathematical_literacy": 10,
+        "reading_literacy": 10,
+        "history_of_Kazakhstan": 13,
+        "mathematics": 45,
+        "physics": 45
+    },
+    "previous_results": {
+        "total_score": [60, 65, 70, 69, 90, 94, 105, 112, 123],
+        "mathematical_literacy": [5, 5, 6, 6, 8, 9, 9, 9, 10],
+        "reading_literacy": [5, 6, 7, 7, 8, 9, 9, 9, 10],
+        "history_of_Kazakhstan": [10, 11, 14, 13, 17, 18, 20, 20, 13],
+        "mathematics": [20, 22, 24, 23, 33, 35, 38, 42, 45],
+        "physics": [20, 21, 19, 20, 24, 27, 34, 37, 45]
+    },
+    "difference_with_previous_exam": {
+        "score_difference": [123, 112],
+        "percentage_change": "+12.5%"
+    },
+    "goal": {
+        "target_score": 45,
+        "achieved": true
+    },
+    "time": 12,
+    "subject1": ["Математика", "mathematics"],
+    "subject2": ["Физика", "physics"]
+}

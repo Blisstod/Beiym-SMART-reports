@@ -1,6 +1,10 @@
 const jwt = require('jsonwebtoken');
+<<<<<<< HEAD
+const { User } = require('../models/userModel');
+=======
 const bcrypt = require
 const { User , Student, Parent, Teacher} = require('../models/userModel');
+>>>>>>> 47ebeb3a3eccd41eb46064212b151a507351bcb3
 const ApiError = require('../error/ApiError');
 
 const generateJwt = (id, email, role) => {
@@ -12,8 +16,11 @@ const generateJwt = (id, email, role) => {
 };
 
 class AuthController {
+<<<<<<< HEAD
+=======
 
 
+>>>>>>> 47ebeb3a3eccd41eb46064212b151a507351bcb3
     async login(req, res, next) {
         try {
             const { email, password } = req.body;
@@ -28,6 +35,24 @@ class AuthController {
         }
     }
 
+<<<<<<< HEAD
+    async register(req, res, next) {
+        try {
+            const { email, name, surname, password, role } = req.body;
+            const exists = await User.findOne({ email });
+            if (exists) {
+                return next(ApiError.conflict('Email already in use.'));
+            }
+            const user = await User.create({ email, name, surname, password, role });
+            const token = generateJwt(user._id, user.email, user.role);
+            res.status(201).json({ token });
+        } catch (error) {
+            next(ApiError.internal(error.message));
+        }
+    }
+
+=======
+>>>>>>> 47ebeb3a3eccd41eb46064212b151a507351bcb3
     async check(req, res, next) {
         try {
             const token = generateJwt(req.user._id, req.user.email, req.user.role);
@@ -36,6 +61,8 @@ class AuthController {
             next(ApiError.internal('Error generating token'));
         }
     }
+<<<<<<< HEAD
+=======
 
     async registerStudent(req, res, next) {
         try {
@@ -130,6 +157,7 @@ class AuthController {
         return res.json({token})
     }
 
+>>>>>>> 47ebeb3a3eccd41eb46064212b151a507351bcb3
 }
 
 module.exports = new AuthController();
