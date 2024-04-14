@@ -13,7 +13,12 @@ class AuthController {
             const { email, password } = req.body;
             const user = await AuthService.validateUserCredentials(email, password);
             const token = AuthService.generateJwt(user._id, user.email, user.role);
-            res.json({ token });
+            const userDetails = {
+                role: user.role,
+                name: user.name,
+                id: user._id
+            };
+            res.json({ token, userDetails });
         } catch (error) {
             next(ApiError.internal(error.message));
         }

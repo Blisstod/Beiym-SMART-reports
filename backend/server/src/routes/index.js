@@ -8,7 +8,6 @@ const teacherRoutes = require('./teacherRoutes')
 
 const router = new express.Router()
 
-// router.use('/admin', adminRoutes)
 router.use('/auth', authRoutes)
 router.use('/admin', adminRoutes)
 // router.use('/class', classRoutes)
