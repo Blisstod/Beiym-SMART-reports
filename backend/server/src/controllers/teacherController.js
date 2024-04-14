@@ -1,56 +1,93 @@
-const { User, Student, Teacher, Class } = require('../models/userModel');
 const ApiError = require('../error/ApiError')
+const Class = require('../models/classModel')
+const { Student , Teacher} = require('../models/userModel')
+const statisticsService = require('../services/statisticsService')
+const userService = require('../services/userService')
 
 class TeacherController {
     async viewStudentsOfClass(req, res, next) {
         try {
-            const { teacherId } = req.user; // Assuming teacherId is available in req.user after authentication
-            const classes = await Class.find({ teacherId }).populate('studentIds');
-            res.status(200).json(classes);
+            const { schoolName, className } = req.params;
+            const teacherId = req.user.id;
+
+            console.log(`Searching for class with School: ${schoolName}, Class: ${className}, TeacherID: ${teacherId}`);
+
+            const classObj = await Class.findOne({ schoolName, className, teacherId }).populate('studentIds');
+
+            if (!classObj) {
+                console.error('Class not found with the provided parameters.');
+                return next(ApiError.notFound('Class not found'));
+            }
+
+            res.status(200).json(classObj.studentIds);
         } catch (error) {
-            next(new ApiError.internal('Failed to fetch class students'))
+            console.error('An error occurred:', error);
+            next(ApiError.internal('Failed to fetch class students'));
         }
     }
+
 
     async addScoresToStudent(req, res, next) {
         try {
-            const { studentId, scores } = req.body; // scores should be an object with subject scores
+            const { studentId } = req.params;
+            const scores = req.body;
+
             const student = await Student.findById(studentId);
             if (!student) {
-                next(new ApiError.notFound('Student not found'));
+                return next(ApiError.notFound('Student not found'));
             }
 
-            student.exams.push(scores);
+            if (typeof scores.date === 'string') {
+                scores.date = new Date(scores.date);
+            }
+
+            student.exams.push(scores); // Push the scores object directly into exams
             await student.save();
             res.status(200).json({ message: "Scores updated successfully", student });
         } catch (error) {
-            next(new ApiError.internal('Failed to add scores'))
+            // Corrected usage of ApiError without 'new' keyword
+            next(ApiError.internal('Failed to add scores'));
         }
     }
 
-    async viewStudentProfile(req, res, next) {
+
+    async viewStudentProfileAndStatistics(req, res, next) {
         try {
             const { studentId } = req.params;
-            const student = await Student.findById(studentId).populate('classId');
-            if (!student) {
-                return next(new ApiError('Student not found', 404));
+            console.log(`Finding user by ID: ${studentId}`);
+            const studentProfile = await userService.findUserById(studentId);
+
+            if (!studentProfile) {
+                console.log('Student profile not found');
+                return next(ApiError.notFound('Student not found'));
             }
-            res.status(200).json(student);
+
+            console.log(`Calculating statistics for student ID: ${studentId}`);
+            const studentStatistics = await statisticsService.calculateStudentStatistics(studentId);
+            console.log(`Statistics calculated: ${JSON.stringify(studentStatistics)}`);
+
+            const combinedResponse = {
+                profile: studentProfile,
+                statistics: studentStatistics
+            };
+
+            res.status(200).json(combinedResponse);
         } catch (error) {
-            next(new ApiError.internal('Failed to fetch student'))
+            console.error('Error in viewStudentProfileAndStatistics:', error);
+            next(ApiError.internal('Failed to fetch student data'));
         }
     }
 
     async viewTeacherProfile(req, res, next) {
         try {
-            const { teacherId } = req.params; // Assuming teacherId is passed as a URL parameter
-            const teacher = await Teacher.findById(teacherId).populate('classId');
+            const { teacherId } = req.params;
+            const teacher = await Teacher.findById(teacherId).populate('schoolName').populate('className');
             if (!teacher) {
                 return next(new ApiError('Teacher not found', 404));
             }
             res.status(200).json(teacher);
         } catch (error) {
-            next(new ApiError.internal('Failed to fetch teacher'))
+            next(ApiError.internal('Failed to fetch teacher'))
         }
     }
 
@@ -66,18 +103,19 @@ class TeacherController {
             }, { new: true });
             res.status(200).json(updatedTeacher);
         } catch (error) {
-            next(new ApiError.internal('Failed to update teacher'))
+            next(ApiError.internal('Failed to update teacher'))
         }
     }
 
     async editStudentProfile(req, res, next) {
         try {
             const { studentId } = req.params;
-            const { name, email, classId } = req.body;
+            const { name, email, schoolName, className } = req.body;
             const updatedStudent = await Student.findByIdAndUpdate(studentId, {
                 name,
                 email,
-                classId
+                schoolName,
+                className
             }, { new: true });
             res.status(200).json(updatedStudent);
         } catch (error) {
@@ -87,75 +125,30 @@ class TeacherController {
 
     async getClassStatistics(req, res, next) {
         try {
-            const { classId } = req.params;
-            const classInfo = await Class.findById(classId).populate({
-                path: 'studentIds',
-                populate: {
-                    path: 'exams'
-                }
-            });
-
-            if (!classInfo) {
-                return next(new ApiError('Class not found', 404));
+            const { schoolName, className } = req.params;
+            // console.log(req.user)
+            const teacher = await Teacher.findById(req.user.id);
+            console.log(teacher)
+            const classObj = await Class.findOne({ schoolName, className, teacherId: teacher._id });
+            if (!classObj) {
+                return next(new ApiError.notFound('Class not found', 404));
             }
-
-            let dateScores = [];
-            let totalScores = [];
-
-            classInfo.studentIds.forEach(student => {
-                student.exams.forEach(exam => {
-                    totalScores.push(exam.totalScore);
-                    const dateIndex = dateScores.findIndex(d => d.date.toISOString().split('T')[0] === exam.date.toISOString().split('T')[0]);
-
-                    if (dateIndex > -1) {
-                        dateScores[dateIndex].scores.push(exam.totalScore);
-                    } else {
-                        dateScores.push({
-                            date: exam.date.toISOString().split('T')[0], // Use just the date part for simplicity
-                            scores: [exam.totalScore]
-                        });
-                    }
-                });
-            });
-
-            const averagesByDate = dateScores.map(ds => {
-                return {
-                    date: ds.date,
-                    avgScore: ds.scores.reduce((a, b) => a + b, 0) / ds.scores.length
-                };
-            });
-
-            const overallAverage = totalScores.reduce((a, b) => a + b, 0) / totalScores.length;
-
-            res.status(200).json({
-                overallAverage,
-                averagesByDate
-            });
+                const statistics = await statisticsService.calculateClassStatistics(classObj._id);
+            res.status(200).json(statistics);
         } catch (error) {
-            next(new ApiError('Failed to calculate class statistics', 500));
+            next(ApiError.internal('Failed to calculate class statistics'));
         }
     }
 
     async viewSubjectDetailsOfStudent(req, res, next) {
         try {
             const { studentId, subject } = req.params;
-            const student = await Student.findById(studentId);
-            if (!student) {
-                return next(new ApiError('Student not found', 404));
-            }
+            console.log(`Fetching subject details for Student ID: ${studentId}, Subject: ${subject}`);
 
-            const subjectScores = student.exams.map(exam => {
-                return { date: exam.date, score: exam[subject] };
-            });
-
-            const avgScore = subjectScores.reduce((acc, curr) => acc + curr.score, 0) / subjectScores.length;
-
-            res.status(200).json({
-                allTimeScores: subjectScores,
-                averageScore: avgScore
-            });
+            const subjectDetails = await statisticsService.calculateSubjectStatisticsForStudent(studentId, subject);
+            res.status(200).json(subjectDetails);
         } catch (error) {
-            next(new ApiError('Failed to fetch subject details', 500));
+            next(ApiError.internal(`Failed to fetch subject details: ${error.message}`));
         }
     }
 }
