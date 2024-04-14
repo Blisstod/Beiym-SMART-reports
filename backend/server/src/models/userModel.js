@@ -57,7 +57,7 @@ const Teacher = User.discriminator('Teacher', new mongoose.Schema({
 }));
 
 const Parent = User.discriminator('Parent', new mongoose.Schema({
-    childEmails: [{ type: String }],
+    childEmails: [{ type: String, required: true }],
     // childStudentIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }]
 }));
 
