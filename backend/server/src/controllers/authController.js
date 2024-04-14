@@ -1,27 +1,18 @@
 const jwt = require('jsonwebtoken');
-const bcrypt = require
+const bcrypt = require('bcrypt')
 const { User , Student, Parent, Teacher} = require('../models/userModel');
 const ApiError = require('../error/ApiError');
-
-const generateJwt = (id, email, role) => {
-    return jwt.sign(
-        { id, email, role },
-        process.env.JWT_SECRET,
-        { expiresIn: '5h' }
-    );
-};
+const Class = require('../models/classModel')
+const AuthService = require('../services/authService');
+const UserService = require('../services/userService');
 
 class AuthController {
-
 
     async login(req, res, next) {
         try {
             const { email, password } = req.body;
-            const user = await User.findByCredentials(email, password);
-            if (!user) {
-                return next(ApiError.unauthorized('Incorrect email or password'));
-            }
-            const token = generateJwt(user._id, user.email, user.role);
+            const user = await AuthService.validateUserCredentials(email, password);
+            const token = AuthService.generateJwt(user._id, user.email, user.role);
             res.json({ token });
         } catch (error) {
             next(ApiError.internal(error.message));
@@ -30,7 +21,7 @@ class AuthController {
 
     async check(req, res, next) {
         try {
-            const token = generateJwt(req.user._id, req.user.email, req.user.role);
+            const token = AuthService.generateJwt(req.user._id, req.user.email, req.user.role);
             res.json({ token });
         } catch (error) {
             next(ApiError.internal('Error generating token'));
@@ -39,34 +30,27 @@ class AuthController {
 
     async registerStudent(req, res, next) {
         try {
-            const {
-                email,
-                name,
-                surname,
-                password,
-                classId,
-                profileSubject1,
-                profileSubject2
-            } = req.body;
-
-            const userExists = await User.findOne({ email });
+            const { email, schoolName, className } = req.body;
+            const userExists = await UserService.findUserByEmail(email);
             if (userExists) {
                 return next(ApiError.conflict('Email already in use.'));
             }
 
-            const student = await Student.create({
-                email,
-                name,
-                surname,
-                password,
-                classId,
-                profileSubject1,
-                profileSubject2,
-                exams: []
-            });
+            const student = await UserService.createUser(req.body, 'Student');
 
-            const token = generateJwt(student._id, student.email, student.role);
-            res.status(201).json({ token });
+            const classObj = await Class.findOneAndUpdate(
+                { schoolName, className },
+                { $push: { studentIds: student._id } },
+                { new: true }
+            );
+
+            if (!classObj) {
+                await Student.findByIdAndRemove(student._id);
+                return next(ApiError.notFound(`Class ${schoolName} ${className} not found`));
+            }
+
+            const token = AuthService.generateJwt(student._id, student.email, student.role);
+            res.status(201).json({ token, enrolledClass: classObj });
         } catch (error) {
             next(ApiError.internal(error.message));
         }
@@ -76,58 +60,54 @@ class AuthController {
 
     async registerTeacher(req, res, next) {
         try {
-            const { email, name, surname, password, schoolName, className } = req.body;
-            const userExists = await User.findOne({ email });
+            const { email, schoolName, className } = req.body;
+            const userExists = await UserService.findUserByEmail(email);
             if (userExists) {
                 return next(ApiError.conflict('Email already in use.'));
             }
-            const teacher = await Teacher.create({
-                email,
-                name,
-                surname,
-                password,
-                schoolName,
-                className
-            });
-            const token = generateJwt(teacher._id, teacher.email, teacher.role);
-            res.status(201).json({ token });
+
+            const teacher = await UserService.createUser(req.body, 'Teacher');
+
+            const classObj = await Class.findOneAndUpdate(
+                { schoolName, className },
+                { teacherId: teacher._id },
+                { new: true, upsert: true } // upsert: true creates the object if it doesn't exist
+            );
+
+            const token = AuthService.generateJwt(teacher._id, teacher.email, teacher.role);
+            res.status(201).json({ token, class: classObj });
         } catch (error) {
             next(ApiError.internal(error.message));
         }
     }
+
 
     async registerParent(req, res, next) {
         try {
-            const { email, name, surname, password, childEmails, childStudentIds } = req.body;
-            const userExists = await User.findOne({ email });
+            const userExists = await UserService.findUserByEmail(req.body.email);
             if (userExists) {
                 return next(ApiError.conflict('Email already in use.'));
             }
-            const parent = await Parent.create({
-                email,
-                name,
-                surname,
-                password,
-                childEmails,
-                childStudentIds
-            });
-            const token = generateJwt(parent._id, parent.email, parent.role);
+            const parent = await UserService.createUser(req.body, 'Parent');
+            const token = AuthService.generateJwt(parent._id, parent.email, parent.role);
             res.status(201).json({ token });
         } catch (error) {
             next(ApiError.internal(error.message));
         }
     }
 
-    async register(req, res, next){
-        const {name, surname, email, password} = req.body
-
-        const exists = await User.findOne({ email } );
-        if(exists){
-            return next(ApiError.conflict('User this Email already exists!'))
+    async register(req, res, next) {
+        try {
+            const userExists = await UserService.findUserByEmail(req.body.email);
+            if (userExists) {
+                return next(ApiError.conflict('User with this Email already exists!'));
+            }
+            const user = await UserService.createUser(req.body, 'User');
+            const token = AuthService.generateJwt(user._id, user.email, user.role);
+            res.status(201).json({ token });
+        } catch (error) {
+            next(ApiError.internal('Error during registration'));
         }
-        const user = await User.create({name: name, surname: surname, email: email, password: password})
-        const token = generateJwt(user.id, user.email, user.role)
-        return res.json({token})
     }
 
 }

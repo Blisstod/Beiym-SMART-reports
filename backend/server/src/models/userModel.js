@@ -43,7 +43,8 @@ const examSchema = new mongoose.Schema({
 }, { _id: false, timestamps: { createdAt: true, updatedAt: false } });
 
 const studentSchema = new mongoose.Schema({
-    classId: { type: mongoose.Schema.Types.ObjectId, ref: 'Class' },
+    schoolName: { type: String, ref: 'Class' },
+    className: { type: String, ref: 'Class' },
     profileSubject1: { type: String, required: true },
     profileSubject2: { type: String, required: true },
     exams: [examSchema]
@@ -57,7 +58,7 @@ const Teacher = User.discriminator('Teacher', new mongoose.Schema({
 
 const Parent = User.discriminator('Parent', new mongoose.Schema({
     childEmails: [{ type: String }],
-    childStudentIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }]
+    // childStudentIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }]
 }));
 
 const Student = User.discriminator('Student', studentSchema);
