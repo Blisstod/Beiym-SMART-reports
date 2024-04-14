@@ -11,7 +11,7 @@ const router = new express.Router()
 router.use('/auth', authRoutes)
 router.use('/admin', adminRoutes)
 // router.use('/class', classRoutes)
-// router.use('/parent', parentRoutes)
+router.use('/parent', parentRoutes)
 router.use('/student', studentRoutes)
 router.use('/teacher', teacherRoutes)
 
