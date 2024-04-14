@@ -12,7 +12,7 @@ router.get('/students/:studentId', teacherController.viewStudentProfileAndStatis
 router.put('/students/:studentId', teacherController.editStudentProfile);
 router.post('/students/:studentId/scores', teacherController.addScoresToStudent);
 router.get('/students/:studentId/subjects/:subject', teacherController.viewSubjectDetailsOfStudent);
-router.get('/profile', teacherController.viewTeacherProfile);
-router.put('/profile', teacherController.editTeacherProfile);
+router.get('/:teacherId', teacherController.viewTeacherProfile);
+router.put('/:teacherId', teacherController.editTeacherProfile);
 
 module.exports = router;
