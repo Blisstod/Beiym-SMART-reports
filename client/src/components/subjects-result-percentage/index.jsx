@@ -2,6 +2,15 @@
 import styles from './style.module.sass'
 import cn from "classnames";
 
+
+// const subjects = [
+//     {name: 'Мат. Грам.', score: 6.7 , maxScore: 10},
+//     {name: 'Грам. Чтен.', score: 7.9, maxScore: 10},
+//     {name: 'История', score: 14.2, maxScore: 20},
+//     {name: 'Математика', score: 33, maxScore: 50},
+//     {name: 'Физика', score: 28.2, maxScore: 50},
+// ]
+
 const getPercentage = (score, maxScore) => `${((score / maxScore) * 100).toFixed(1)} %`
 
 const SubjectsResultPercentage = ({subjects}) => {
