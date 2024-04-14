@@ -1,10 +1,11 @@
+import SubjectScoresChart from "../../components/subject-scores-chart/index.jsx";
+import ScoresLineChart from "../../components/scores-line-chart/index.jsx";
 
 const MainPage = () => {
 
     return (
-        <>
-            main page
-        </>
+        <div className={'pt-5 d-flex'}>
+        </div>
     )
 }
 
